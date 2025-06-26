@@ -38,9 +38,16 @@ ApplicationWindow {
                     font.pixelSize: 16
                     onClicked: currentPage = "PageFIFO.qml"
                 }
+                
+                Button {
+                    text: "DeBug模式"
+                    width: parent.width
+                    font.pixelSize: 16
+                    onClicked: currentPage = "PageFIFO.qml"
+                }
 
                 Button {
-                    text: showSystemMenu ? "系統管理 ▼" : "系統管理 ▶"
+                    text: showSystemMenu ? "系統設定 ▼" : "系統設定 ▶"
                     width: parent.width
                     font.pixelSize: 16
                     onClicked: showSystemMenu = !showSystemMenu
@@ -101,11 +108,11 @@ ApplicationWindow {
             spacing: 3
 
             Button {
-                text: "．麥克風設定"
+                text: "．基本設定"
                 width: 165
                 font.pixelSize: 14
                 background: Rectangle { color: "#3399FF" }
-                onClicked: console.log("麥克風設定")
+                onClicked: console.log("基本設定")
             }
 
             Button {
@@ -114,6 +121,30 @@ ApplicationWindow {
                 font.pixelSize: 14
                 background: Rectangle { color: "#3399FF" }
                 onClicked: console.log("攝影機設定")
+            }
+
+            Button {
+                text: "．麥克風設定"
+                width: 165
+                font.pixelSize: 14
+                background: Rectangle { color: "#3399FF" }
+                onClicked: console.log("麥克風設定")
+            }
+
+            Button {
+                text: "．修改密碼"
+                width: 165
+                font.pixelSize: 14
+                background: Rectangle { color: "#3399FF" }
+                onClicked: console.log("修改密碼")
+            }
+
+            Button {
+                text: "．會議場景"
+                width: 165
+                font.pixelSize: 14
+                background: Rectangle { color: "#3399FF" }
+                onClicked: console.log("會議場景")
             }
         }
     }
