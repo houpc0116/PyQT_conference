@@ -100,6 +100,110 @@ ApplicationWindow {
         }
     }
 
+
+    // ✅ 彈跳視窗元件（一開始隱藏）
+    Dialog {
+        id: sceneDialog
+        width: 600
+        height: 400
+        title: "會議場景設定"
+        modal: true  // 擋背景互動
+        standardButtons: Dialog.Ok
+
+        // 內部內容你可自訂
+        Rectangle {
+            anchors.fill: parent
+            color: "white"
+
+            Text {
+                text: "這是會議場景彈窗"
+                anchors.centerIn: parent
+                font.pixelSize: 18
+            }
+        }
+    }
+
+    Window {
+        id: sceneWindow
+        width: 600
+        height: 400
+        visible: false
+        title: "會議場景視窗"
+        modality: Qt.ApplicationModal  // 可選：阻擋其他視窗互動
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#ccc"
+
+            Column {
+                anchors.fill: parent
+                spacing: 10
+                anchors.margins: 15
+
+                // 上方 Row 兩個按鈕
+                Row {
+                    spacing: 10
+
+                    Button {
+                        text: "載入背景"
+                        onClicked: console.log("點擊儲存")
+                    }
+
+                    Button {
+                        text: "自動排列"
+                        onClicked: sceneWindow.visible = false
+                    }
+                }
+
+                // 下方內容區
+                Rectangle {
+                    width: parent.width
+                    height: 300
+                    color: "#f2f2f2"
+                    radius: 4
+
+                    // 預設白色背景
+                    Rectangle {
+                        id: fallbackBackground
+                        anchors.fill: parent
+                        color: "white"
+                        visible: true  // 預設可見
+                    }
+
+                    // 背景圖片（成功載入時會蓋住白底）
+                    Image {
+                        id: background
+                        anchors.fill: parent
+                        source: "assets/scene_bg.png"
+                        fillMode: Image.PreserveAspectCrop
+                        visible: status === Image.Ready  // 只有載入成功才顯示
+                        onStatusChanged: {
+                            fallbackBackground.visible = !(status === Image.Ready)
+                        }
+                    }
+
+                    // 可拖曳的人形圖像
+                    Image {
+                        id: personIcon
+                        source: "assets/Sample_User_Icon.png"
+                        width: 60
+                        height: 60
+                        x: 100
+                        y: 100
+
+                        MouseArea {
+                            anchors.fill: parent
+                            drag.target: parent
+                            cursorShape: Qt.OpenHandCursor
+                            onPressed: cursorShape = Qt.ClosedHandCursor
+                            onReleased: cursorShape = Qt.OpenHandCursor
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // 系統管理子選單
     Component {
         id: systemSubMenu
@@ -144,7 +248,10 @@ ApplicationWindow {
                 width: 165
                 font.pixelSize: 14
                 background: Rectangle { color: "#3399FF" }
-                onClicked: console.log("會議場景")
+                onClicked: {
+                    console.log("開啟獨立會議視窗")
+                    sceneWindow.visible = true
+                }
             }
         }
     }
