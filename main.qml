@@ -78,7 +78,7 @@ ApplicationWindow {
             }
         }
 
-        // 右側主畫面區塊：使用 Loader 變換畫面
+        // 右側主畫面區塊(使用 Loader 變換畫面)
         Loader {
             id: mainView
             Layout.fillWidth: true
@@ -151,7 +151,33 @@ ApplicationWindow {
 
                     Button {
                         text: "自動排列"
+                        onClicked: {
+                            console.log("⏩ 執行自動排列")
+                            let spacing = 80   // 每人之間間距
+                            let startX = 0
+                            let fixedY = 0   // 固定 y 值為一列
+
+                            for (let i = 0; i < userModel.count; i++) {
+                                userModel.set(i, {
+                                    name: userModel.get(i).name,
+                                    x: startX + i * spacing,
+                                    y: fixedY
+                                })
+                            }
+                        }
+                        //onClicked: console.log("自動排列")
+                        //onClicked: sceneWindow.visible = false
+                    }
+
+                    Button {
+                        text: "儲存"
+                        onClicked: console.log("儲存")
+                    }
+
+                    Button {
+                        text: "取消"
                         onClicked: sceneWindow.visible = false
+                        //onClicked: console.log("取消")
                     }
                 }
 
@@ -182,23 +208,91 @@ ApplicationWindow {
                         }
                     }
 
-                    // 可拖曳的人形圖像
-                    Image {
-                        id: personIcon
-                        source: "assets/Sample_User_Icon.png"
-                        width: 60
-                        height: 60
-                        x: 100
-                        y: 100
+                    // 使用者資料模型
+                    ListModel {
+                        id: userModel
+                        ListElement { name: "使用者 1"; x: 60;  y: 50 }
+                        ListElement { name: "使用者 2"; x: 150; y: 80 }
+                        ListElement { name: "使用者 3"; x: 240; y: 110 }
+                        ListElement { name: "使用者 4"; x: 330; y: 140 }
+                        ListElement { name: "使用者 5"; x: 420; y: 170 }
+                    }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            drag.target: parent
-                            cursorShape: Qt.OpenHandCursor
-                            onPressed: cursorShape = Qt.ClosedHandCursor
-                            onReleased: cursorShape = Qt.OpenHandCursor
+
+                    // 可拖曳的圖像 + 文字
+                    Repeater {
+                        model: userModel
+                        delegate: Item {
+                            id: personItem
+                            width: 60
+                            height: 80
+                            x: model.x
+                            y: model.y
+
+                            // 拖曳偏移暫存
+                            property real dragOffsetX: 0
+                            property real dragOffsetY: 0
+
+                            // 拖曳區域
+                            MouseArea {
+                                id: dragArea
+                                anchors.fill: parent
+                                drag.target: parent
+                                cursorShape: Qt.OpenHandCursor
+
+                                onPressed: {
+                                    cursorShape = Qt.ClosedHandCursor
+                                    dragOffsetX = mouse.x
+                                    dragOffsetY = mouse.y
+                                }
+
+                                onPositionChanged: {
+                                    let newX = personItem.x + (mouse.x - dragOffsetX);
+                                    let newY = personItem.y + (mouse.y - dragOffsetY);
+
+                                    const minX = 0;
+                                    const minY = 0;
+                                    const maxX = background.width - personItem.width;
+                                    const maxY = background.height - personItem.height;
+
+                                    personItem.x = Math.max(minX, Math.min(newX, maxX));
+                                    personItem.y = Math.max(minY, Math.min(newY, maxY));
+                                }
+
+                                onReleased: {
+                                    // ✅ 拖曳後更新 model
+                                    userModel.set(index, {
+                                        name: model.name,
+                                        x: personItem.x,
+                                        y: personItem.y
+                                    });
+                                }
+                                //onReleased: cursorShape = Qt.OpenHandCursor
+                            }
+
+                            // 人像與名稱
+                            Column {
+                                anchors.centerIn: parent
+                                spacing: 4
+
+                                Image {
+                                    source: "assets/icon-member-m.gif"
+                                    width: 60
+                                    height: 60
+                                    fillMode: Image.PreserveAspectFit
+                                }
+
+                                Text {
+                                    text: model.name
+                                    font.pixelSize: 12
+                                    color: "#333"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                }
+                            }
                         }
                     }
+
                 }
             }
         }
