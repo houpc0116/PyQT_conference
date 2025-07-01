@@ -152,22 +152,76 @@ ApplicationWindow {
                     Button {
                         text: "自動排列"
                         onClicked: {
-                            console.log("⏩ 執行自動排列")
-                            let spacing = 80   // 每人之間間距
-                            let startX = 0
-                            let fixedY = 0   // 固定 y 值為一列
+                            const personWidth = 60
+                            const personHeight = 80
+                            const spacingX = 30
+                            const spacingY = 30
+                            const maxColumns = Math.floor(parent.width / (personWidth + spacingX))
+                            const startX = 20
+                            const startY = 40
 
+                            let users = []
                             for (let i = 0; i < userModel.count; i++) {
-                                userModel.set(i, {
-                                    name: userModel.get(i).name,
-                                    x: startX + i * spacing,
-                                    y: fixedY
-                                })
+                                let u = userModel.get(i)
+                                users.push({ name: u.name, x: u.x, y: u.y })
+                            }
+
+                            users.sort((a, b) => {
+                                if (a.y !== b.y) return a.y - b.y
+                                return a.x - b.x
+                            })
+
+                            for (let i = 0; i < users.length; i++) {
+                                const row = Math.floor(i / maxColumns)
+                                const col = i % maxColumns
+                                const newX = startX + col * (personWidth + spacingX)
+                                const newY = startY + row * (personHeight + spacingY)
+
+                                for (let j = 0; j < userModel.count; j++) {
+                                    if (userModel.get(j).name === users[i].name) {
+                                        userModel.set(j, { name: users[i].name, x: newX, y: newY })
+                                        break
+                                    }
+                                }
                             }
                         }
-                        //onClicked: console.log("自動排列")
-                        //onClicked: sceneWindow.visible = false
                     }
+
+                    Button {
+                        text: "名稱排序"
+                        onClicked: {
+                            const personWidth = 60
+                            const personHeight = 80
+                            const spacingX = 30
+                            const spacingY = 30
+                            const maxColumns = Math.floor(parent.width / (personWidth + spacingX))
+                            const startX = 20
+                            const startY = 40
+
+                            let users = []
+                            for (let i = 0; i < userModel.count; i++) {
+                                let u = userModel.get(i)
+                                users.push({ name: u.name, x: u.x, y: u.y })
+                            }
+
+                            users.sort((a, b) => a.name.localeCompare(b.name))
+
+                            for (let i = 0; i < users.length; i++) {
+                                const row = Math.floor(i / maxColumns)
+                                const col = i % maxColumns
+                                const newX = startX + col * (personWidth + spacingX)
+                                const newY = startY + row * (personHeight + spacingY)
+
+                                for (let j = 0; j < userModel.count; j++) {
+                                    if (userModel.get(j).name === users[i].name) {
+                                        userModel.set(j, { name: users[i].name, x: newX, y: newY })
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+
 
                     Button {
                         text: "儲存"
@@ -229,70 +283,53 @@ ApplicationWindow {
                             x: model.x
                             y: model.y
 
-                            // 拖曳偏移暫存
                             property real dragOffsetX: 0
                             property real dragOffsetY: 0
 
-                            // 拖曳區域
                             MouseArea {
-                                id: dragArea
                                 anchors.fill: parent
                                 drag.target: parent
-                                cursorShape: Qt.OpenHandCursor
-
-                                onPressed: {
-                                    cursorShape = Qt.ClosedHandCursor
+                                onPressed: function(mouse) {
                                     dragOffsetX = mouse.x
                                     dragOffsetY = mouse.y
                                 }
+                                onPositionChanged: function(mouse) {
+                                    let newX = personItem.x + (mouse.x - dragOffsetX)
+                                    let newY = personItem.y + (mouse.y - dragOffsetY)
 
-                                onPositionChanged: {
-                                    let newX = personItem.x + (mouse.x - dragOffsetX);
-                                    let newY = personItem.y + (mouse.y - dragOffsetY);
+                                    const maxX = background.width - personItem.width
+                                    const maxY = background.height - personItem.height
 
-                                    const minX = 0;
-                                    const minY = 0;
-                                    const maxX = background.width - personItem.width;
-                                    const maxY = background.height - personItem.height;
-
-                                    personItem.x = Math.max(minX, Math.min(newX, maxX));
-                                    personItem.y = Math.max(minY, Math.min(newY, maxY));
+                                    personItem.x = Math.max(0, Math.min(newX, maxX))
+                                    personItem.y = Math.max(0, Math.min(newY, maxY))
                                 }
-
                                 onReleased: {
-                                    // ✅ 拖曳後更新 model
                                     userModel.set(index, {
                                         name: model.name,
                                         x: personItem.x,
                                         y: personItem.y
-                                    });
+                                    })
                                 }
-                                //onReleased: cursorShape = Qt.OpenHandCursor
                             }
 
-                            // 人像與名稱
                             Column {
                                 anchors.centerIn: parent
                                 spacing: 4
-
                                 Image {
                                     source: "assets/icon-member-m.gif"
                                     width: 60
                                     height: 60
-                                    fillMode: Image.PreserveAspectFit
                                 }
-
                                 Text {
                                     text: model.name
                                     font.pixelSize: 12
-                                    color: "#333"
-                                    horizontalAlignment: Text.AlignHCenter
                                     anchors.horizontalCenter: parent.horizontalCenter
                                 }
                             }
                         }
                     }
 
+                // END
                 }
             }
         }
